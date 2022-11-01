@@ -71,8 +71,34 @@ public class DivByZeroTransfer extends CFTransfer {
             Comparison operator,
             AnnotationMirror lhs,
             AnnotationMirror rhs) {
-        // TODO
-        return lhs;
+        AnnotationMirror zero = reflect(Zero.class);
+        AnnotationMirror nonzero = reflect(Nonzero.class);
+        switch (operator) {
+            case EQ:
+                if (equal(rhs, zero)) {
+                    return zero;
+                } else if (equal(rhs, nonzero)) {
+                    return nonzero;
+                }
+                return lhs;
+            case NE:
+                if (equal(rhs, zero)) {
+                    return nonzero;
+                } else if (equal(rhs, nonzero)) {
+                    return zero;
+                }
+                return lhs;
+            case LT:
+            case GT:
+                if (equal(rhs, zero)) {
+                    return nonzero;
+                }
+            case LE:
+            case GE:
+                return lhs;
+            default:
+                return lhs;
+        }
     }
 
     /**
@@ -93,8 +119,43 @@ public class DivByZeroTransfer extends CFTransfer {
             BinaryOperator operator,
             AnnotationMirror lhs,
             AnnotationMirror rhs) {
-        // TODO
-        return top();
+        AnnotationMirror zero = reflect(Zero.class);        
+        AnnotationMirror nonzero = reflect(Nonzero.class);
+        switch (operator) {
+            case PLUS:
+                if (equal(lhs, zero)) {
+                    return rhs;
+                } else if (equal(rhs, zero)) {
+                    return lhs;
+                } else {
+                    return top();
+                }
+            case MINUS:
+                if (equal(rhs, zero)) {
+                    return lhs;
+                }
+                return top();
+            case MOD:
+                if (equal(lhs, zero)) {
+                    return zero;
+                }
+            case TIMES:
+                if (equal(lhs, nonzero) && equal(rhs, nonzero)) {
+                    return nonzero;
+                } else if (equal(lhs, zero) || equal(rhs, zero)) {
+                    return zero;
+                }
+                return top();
+            case DIVIDE:
+                if (equal(lhs, nonzero)) {
+                    return nonzero;
+                } else if (equal(lhs, zero)) {
+                    return zero;
+                }
+                return top();
+            default:
+                return top();
+        }
     }
 
     // ========================================================================
